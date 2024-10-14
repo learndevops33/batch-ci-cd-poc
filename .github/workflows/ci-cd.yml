@@ -65,6 +65,9 @@ jobs:
         run: |
           git fetch --all
           
+          # GitHub event type logging
+          echo "**GitHub Event :** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+
           # Determine base branch based on the event type
           # if [[ "${{ github.event_name }}" == "pull_request" ]]; then
           #   echo "**GitHub Event :** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
@@ -73,25 +76,32 @@ jobs:
           #   echo "**GitHub Event :** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
           #   BASE_BRANCH="main"
           # 
-          
-          # GitHub event type logging
-          echo "**GitHub Event :** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+
+           # Determine base branch based on the event type
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "**GitHub Event :** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+            BASE_BRANCH="${{ github.event.pull_request.base.ref }}"
+          elif [[ "$CURRENT_BRANCH" == feature/*]]; then
+            echo "**GitHub Event :** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+            BASE_BRANCH="develop"
+          else
+            BASE_BRANCH="main"
           
           # Get the current branch for push event
-          CURRENT_BRANCH="${{ github.ref_name }}"
-          echo "Current branch is: $CURRENT_BRANCH" >> $GITHUB_STEP_SUMMARY
+          # CURRENT_BRANCH="${{ github.ref_name }}"
+          # echo "Current branch is: $CURRENT_BRANCH" >> $GITHUB_STEP_SUMMARY
 
-          # Determine the base branch dynamically based on the branch pattern
-          if [[ "$CURRENT_BRANCH" == feature/* ]]; then
-            BASE_BRANCH="develop"
-          elif [[ "$CURRENT_BRANCH" == release/* ]]; then
-            BASE_BRANCH="main"
-          elif [[ "$CURRENT_BRANCH" == hotfix/* ]]; then
-            BASE_BRANCH="main"
-          else
-            # Fallback to default base branch
-            BASE_BRANCH="main"
-          fi
+          # # Determine the base branch dynamically based on the branch pattern
+          # if [[ "$CURRENT_BRANCH" == feature/* ]]; then
+          #   BASE_BRANCH="develop"
+          # elif [[ "$CURRENT_BRANCH" == release/* ]]; then
+          #   BASE_BRANCH="main"
+          # elif [[ "$CURRENT_BRANCH" == hotfix/* ]]; then
+          #   BASE_BRANCH="main"
+          # else
+          #   # Fallback to default base branch
+          #   BASE_BRANCH="main"
+          # fi
 
           echo "Base branch is determined as: $BASE_BRANCH" >> $GITHUB_STEP_SUMMARY
           echo "BASE_BRANCH=$BASE_BRANCH" >> $GITHUB_ENV
