@@ -68,10 +68,10 @@ jobs:
           echo "**GitHub Event :** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
           
           # Determine base branch based on the event type
-          if [[ "${{ github.event_name }}" == "pull_request" && "$Branch" == develop ]]; then
+          if [[ "${{ github.event_name }}" == "pull_request" && "$BRANCH" == develop ]]; then
             echo "**GitHub Event :** pull_request" >> $GITHUB_STEP_SUMMARY
             BASE_BRANCH="develop"
-          elif [[ "${{ github.event_name }}" == "pull_request" && "$Branch" == main ]]; then
+          elif [[ "${{ github.event_name }}" == "pull_request" && "$BRANCH" == main ]]; then
             echo "**GitHub Event :** pull_request" >> $GITHUB_STEP_SUMMARY
             BASE_BRANCH="main"
           elif [[ "$BRANCH" == feature/* ]]; then
