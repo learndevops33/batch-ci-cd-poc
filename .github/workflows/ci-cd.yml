@@ -42,7 +42,7 @@ jobs:
 
           if [[ "$BRANCH" == feature/* || "$BRANCH" == bugfix/* ]]; then
             ENVIRONMENT="dev"
-          elif [[ "$BRANCH" == release/* ]]; then
+          elif [[ "$BRANCH" == release/* || "$BRANCH" == develop ]]; then
             ENVIRONMENT="uat"
           elif [[ "$BRANCH" == main || "$BRANCH" == hotfix/* ]]; then
             ENVIRONMENT="prod"
