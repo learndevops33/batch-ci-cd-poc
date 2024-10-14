@@ -71,7 +71,7 @@ jobs:
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
             echo "**GitHub Event :** pull_request" >> $GITHUB_STEP_SUMMARY
             BASE_BRANCH="develop"
-          elif [[ "$CURRENT_BRANCH" == feature/* ]]; then
+          elif [[ "$BRANCH" == feature/* ]]; then
             echo "Feature branch detected" >> $GITHUB_STEP_SUMMARY
             BASE_BRANCH="develop"
           else
