@@ -90,25 +90,26 @@ jobs:
           git fetch origin $CURRENT_BRANCH
 
           # Display git rev-parse for base branch and current commit
-          BASE_BRANCH_HASH=$(git rev-parse origin/$BASE_BRANCH)
+          BASE_BRANCH_SHA=$(git rev-parse origin/$BASE_BRANCH)
           CURRENT_SHA="${{ github.sha }}"
 
-          echo "Base branch ($BASE_BRANCH) commit hash: $BASE_BRANCH_HASH"
+          echo "Base branch ($BASE_BRANCH) commit hash: $BASE_BRANCH_SHA"
           echo "Current commit hash (github.sha): $CURRENT_SHA"
 
             # Check branch and commits step summary
           echo "### Branch & Commit Hashes" >> $GITHUB_STEP_SUMMARY
           echo "- **Base branch**: $BASE_BRANCH" >> $GITHUB_STEP_SUMMARY
           echo "- **Current branch**: $CURRENT_BRANCH" >> $GITHUB_STEP_SUMMARY
-          echo "- **Base branch commit ($BASE_BRANCH)**: $BASE_BRANCH_HASH" >> $GITHUB_STEP_SUMMARY
+          echo "- **Base branch commit ($BASE_BRANCH)**: $BASE_BRANCH_SHA" >> $GITHUB_STEP_SUMMARY
           echo "- **Current branch commit (github.sha)**: $CURRENT_SHA" >> $GITHUB_STEP_SUMMARY
     
 
           # Check if PR is merged by checking if the base and current branch are the same
-          if [[ "$BASE_BRANCH_HASH" == "$CURRENT_SHA" ]]; then
+          if [[ "$BASE_BRANCH_SHA" == "$CURRENT_SHA" ]]; then
             # PR has been merged, use the previous commit to get the changes before the merge
-            echo "Pull request merged. Using the parent commit to find changes."
+            echo "$BASE_BRANCH_SHA and  $CURRENT_SHA are same " >> $GITHUB_STEP_SUMMARY
             PARENT_COMMIT=$(git rev-parse $CURRENT_SHA^1)
+            echo "Pull request merged to $BASE_BRANCH branch. Using the parent commit $PARENT_COMMIT to find changes for the current SHA $CURRENT_SHA." >> $GITHUB_STEP_SUMMARY
             MODIFIED_FILES=$(git diff --name-only $PARENT_COMMIT $CURRENT_SHA)
           else
             # Regular diff
