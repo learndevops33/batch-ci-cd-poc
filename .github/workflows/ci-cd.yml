@@ -96,6 +96,14 @@ jobs:
           echo "Base branch ($BASE_BRANCH) commit hash: $BASE_BRANCH_HASH"
           echo "Current commit hash (github.sha): $CURRENT_SHA"
 
+            # Check branch and commits step summary
+          echo "### Branch & Commit Hashes" >> $GITHUB_STEP_SUMMARY
+          echo "- **Base branch**: $BASE_BRANCH" >> $GITHUB_STEP_SUMMARY
+          echo "- **Current branch**: $CURRENT_BRANCH" >> $GITHUB_STEP_SUMMARY
+          echo "- **Base branch commit ($BASE_BRANCH)**: $BASE_BRANCH_HASH" >> $GITHUB_STEP_SUMMARY
+          echo "- **Current branch commit (github.sha)**: $CURRENT_SHA" >> $GITHUB_STEP_SUMMARY
+    
+
           # Check if PR is merged by checking if the base and current branch are the same
           if [[ "$BASE_BRANCH_HASH" == "$CURRENT_SHA" ]]; then
             # PR has been merged, use the previous commit to get the changes before the merge
