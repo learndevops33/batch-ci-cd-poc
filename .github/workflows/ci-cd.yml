@@ -109,7 +109,7 @@ jobs:
             # PR has been merged, use the previous commit to get the changes before the merge
             echo "$BASE_BRANCH_SHA and  $CURRENT_SHA are same " >> $GITHUB_STEP_SUMMARY
             PARENT_COMMIT=$(git rev-parse $CURRENT_SHA^1)
-            echo "$BASE_BRANCH_SHA and  $CURRENT_SHA are same. Pull request is for $BASE_BRANCH branch. Using the parent commit $PARENT_COMMIT to find changes for the current SHA $CURRENT_SHA." >> $GITHUB_STEP_SUMMARY
+            echo "Pull request merged to $BASE_BRANCH branch. Using the parent commit SHA $PARENT_COMMIT to find changes for the current SHA $CURRENT_SHA." >> $GITHUB_STEP_SUMMARY
             MODIFIED_FILES=$(git diff --name-only $PARENT_COMMIT $CURRENT_SHA)
           else
             # Regular diff
