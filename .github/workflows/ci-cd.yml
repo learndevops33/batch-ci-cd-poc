@@ -66,8 +66,10 @@ jobs:
           
           # Determine base branch based on the event type
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "**GitHub Event :** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
             BASE_BRANCH="${{ github.event.pull_request.base.ref }}"
           else
+            echo "**GitHub Event :** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
             BASE_BRANCH="main"
           fi
 
@@ -123,9 +125,9 @@ jobs:
           # Add modified files to the step summary
           echo "### Modified Files" >> $GITHUB_STEP_SUMMARY
           if [ -z "$MODIFIED_FILES" ]; then
-            echo "- No modified files" >> $GITHUB_STEP_SUMMARY
+            echo "No modified files" >> $GITHUB_STEP_SUMMARY
           else
-            echo "- $MODIFIED_FILES" >> $GITHUB_STEP_SUMMARY
+            echo "$MODIFIED_FILES" >> $GITHUB_STEP_SUMMARY
           fi
 
 
