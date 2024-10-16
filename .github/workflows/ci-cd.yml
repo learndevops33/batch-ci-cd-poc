@@ -21,7 +21,7 @@ on:
 jobs:
   rebase:
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
     steps:
       - name: Checkout the target branch (base)
         uses: actions/checkout@v4
