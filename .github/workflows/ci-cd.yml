@@ -46,8 +46,8 @@ jobs:
           git push origin ${{ github.event.pull_request.head.ref }} --force  # Force push after rebase to update the PR
 
   build:
-    needs: rebase
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
     outputs:
       alpha_exists: ${{ steps.set_programs.outputs.alpha_exists }}
       beta_exists: ${{ steps.set_programs.outputs.beta_exists }}
