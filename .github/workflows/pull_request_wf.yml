@@ -49,7 +49,12 @@ jobs:
       - name: Set environment based on the branch
         id: set_env
         run: |
-          BRANCH="${{ github.ref_name }}"
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            BRANCH="${{ github.event.pull_request.base.ref }}"
+          else
+            BRANCH="${{ github.ref_name }}"
+          fi
+
           if [[ "$BRANCH" == feature/* || "$BRANCH" == bugfix/* ]]; then
             ENVIRONMENT="dev"
           elif [[ "$BRANCH" == release/* || "$BRANCH" == develop ]]; then
