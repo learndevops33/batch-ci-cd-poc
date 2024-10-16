@@ -17,7 +17,10 @@ jobs:
           ref: ${{ github.event.pull_request.base.ref }}  # Target branch like develop
           fetch-depth: 0
           clean: true
-
+      - name: Set Git user identity
+        run: |
+            git config user.email "babitha.aietham@gmail.com"  # You can choose any email, typically something like 'action@github.com'
+            git config user.name "learndevops33"         # You can choose any name here
       - name: Checkout the current branch (head)
         run: |
           git fetch origin ${{ github.event.pull_request.head.ref }}  # Fetch the feature branch
