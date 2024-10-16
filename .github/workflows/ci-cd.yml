@@ -19,8 +19,35 @@ on:
       - main
 
 jobs:
+  rebase:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout the target branch (base)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}  # Target branch like develop
+          fetch-depth: 0
+          clean: true
+
+      - name: Checkout the current branch (head)
+        run: |
+          git fetch origin ${{ github.event.pull_request.head.ref }}  # Fetch the feature branch
+          git checkout ${{ github.event.pull_request.head.ref }}      # Checkout the feature branch
+
+      - name: Rebase the current branch onto the target branch
+        run: |
+          git rebase origin/${{ github.event.pull_request.base.ref }}  # Rebase the feature branch onto develop
+
+      - name: Push the rebased branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Use GitHub token to push
+        run: |
+          git push origin ${{ github.event.pull_request.head.ref }} --force  # Force push after rebase to update the PR
+
   build:
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
     outputs:
       alpha_exists: ${{ steps.set_programs.outputs.alpha_exists }}
       beta_exists: ${{ steps.set_programs.outputs.beta_exists }}
