@@ -14,27 +14,39 @@ jobs:
       - name: Checkout the target branch (base)
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.base.ref }}  # Target branch like develop
+          ref: ${{ github.event.pull_request.base.ref }}
           fetch-depth: 0
           clean: true
+
       - name: Set Git user identity
         run: |
-            git config user.email "babitha.aietham@gmail.com"  # You can choose any email, typically something like 'action@github.com'
-            git config user.name "learndevops33"         # You can choose any name here
+          git config user.email "babitha.aietham@gmail.com" 
+          git config user.name "learndevops33" 
       - name: Checkout the current branch (head)
         run: |
-          git fetch origin ${{ github.event.pull_request.head.ref }}  # Fetch the feature branch
-          git checkout ${{ github.event.pull_request.head.ref }}      # Checkout the feature branch
+          git fetch origin ${{ github.event.pull_request.head.ref }} 
+          git checkout ${{ github.event.pull_request.head.ref }}   
 
       - name: Rebase the current branch onto the target branch
         run: |
-          git rebase origin/${{ github.event.pull_request.base.ref }}  # Rebase the feature branch onto develop
+          git rebase origin/${{ github.event.pull_request.base.ref }} 
+
+      - name: Check the diff after rebase
+        run: |
+          echo "Checking the differences after rebase:"
+          git diff origin/${{ github.event.pull_request.base.ref }}..${{ github.event.pull_request.head.ref }}
+
+      - name: Check reflog after rebase
+        run: |
+          echo "Reflog entries after rebase:"
+          git reflog
 
       - name: Push the rebased branch
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Use GitHub token to push
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
         run: |
           git push origin ${{ github.event.pull_request.head.ref }} --force  # Force push after rebase to update the PR
+
 
   build:
     needs: rebase
