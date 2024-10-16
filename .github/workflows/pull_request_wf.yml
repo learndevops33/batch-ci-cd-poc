@@ -49,7 +49,12 @@ jobs:
       - name: Set environment based on the branch
         id: set_env
         run: |
-          BRANCH="${{ github.ref_name }}"
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            BRANCH="${{ github.event.pull_request.base.ref }}"
+          else
+            BRANCH="${{ github.ref_name }}"
+          fi
+
           if [[ "$BRANCH" == feature/* || "$BRANCH" == bugfix/* ]]; then
             ENVIRONMENT="dev"
           elif [[ "$BRANCH" == release/* || "$BRANCH" == develop ]]; then
@@ -76,10 +81,20 @@ jobs:
           
           echo "**GitHub Event :** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
           
-          BASE_BRANCH="main"  # Default base branch
-          if [[ "$BRANCH" == feature/* ]]; then
+              # Determine base branch based on the event type
+          if [[ "${{ github.event_name }}" == "pull_request" && "$BRANCH" == develop ]]; then
+            echo "**GitHub Event :** pull_request" >> $GITHUB_STEP_SUMMARY
+            BASE_BRANCH="develop"
+          elif [[ "${{ github.event_name }}" == "pull_request" && "$BRANCH" == main ]]; then
+            echo "**GitHub Event :** pull_request" >> $GITHUB_STEP_SUMMARY
+            BASE_BRANCH="main"
+          elif [[ "$BRANCH" == feature/* ]]; then
+            echo "Feature branch detected" >> $GITHUB_STEP_SUMMARY
             BASE_BRANCH="develop"
           elif [[ "$BRANCH" == develop ]]; then
+            echo "develop branch detected" >> $GITHUB_STEP_SUMMARY
+            BASE_BRANCH="main"
+          else
             BASE_BRANCH="main"
           fi
 
@@ -94,7 +109,13 @@ jobs:
             exit 1
           fi
           
-          CURRENT_BRANCH="${{ github.ref_name }}"
+               # Get the current branch dynamically based on the event
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            CURRENT_BRANCH="${{ github.event.pull_request.head.ref }}"
+          else
+            CURRENT_BRANCH="${{ github.ref_name }}"
+          fi
+
           echo "Current branch is: $CURRENT_BRANCH" >> $GITHUB_STEP_SUMMARY
           git fetch origin $CURRENT_BRANCH
           
