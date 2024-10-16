@@ -1,17 +1,6 @@
-name: mock CI/CD
+name: Pull Request CI/CD
 
 on:
-  workflow_dispatch: 
-  push:
-    branches:
-
-      - 'feature/*'
-      - 'release/*'
-      - 'main'
-    paths:
-      - alpha/**
-      - beta/**
-      - gamma/**
   pull_request:
     branches:
       - 'release/*'
@@ -19,19 +8,48 @@ on:
       - main
 
 jobs:
+  rebase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the target branch (base)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}  # Target branch like develop
+          fetch-depth: 0
+          clean: true
+      - name: Set Git user identity
+        run: |
+            git config user.email "babitha.aietham@gmail.com"  # You can choose any email, typically something like 'action@github.com'
+            git config user.name "learndevops33"         # You can choose any name here
+      - name: Checkout the current branch (head)
+        run: |
+          git fetch origin ${{ github.event.pull_request.head.ref }}  # Fetch the feature branch
+          git checkout ${{ github.event.pull_request.head.ref }}      # Checkout the feature branch
+
+      - name: Rebase the current branch onto the target branch
+        run: |
+          git rebase origin/${{ github.event.pull_request.base.ref }}  # Rebase the feature branch onto develop
+
+      - name: Push the rebased branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Use GitHub token to push
+        run: |
+          git push origin ${{ github.event.pull_request.head.ref }} --force  # Force push after rebase to update the PR
+
   build:
+    needs: rebase
     runs-on: ubuntu-latest
     outputs:
       alpha_exists: ${{ steps.set_programs.outputs.alpha_exists }}
       beta_exists: ${{ steps.set_programs.outputs.beta_exists }}
       gamma_exists: ${{ steps.set_programs.outputs.gamma_exists }}
     steps:
-      - name: Checkout code
+      - name: Checkout code - shallow
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 1
 
-      - name: Set environment based on the branch or PR
+      - name: Set environment based on the branch
         id: set_env
         run: |
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
@@ -42,7 +60,7 @@ jobs:
 
           if [[ "$BRANCH" == feature/* || "$BRANCH" == bugfix/* ]]; then
             ENVIRONMENT="dev"
-          elif [[ "$BRANCH" == release/* ]]; then
+          elif [[ "$BRANCH" == release/* || "$BRANCH" == develop ]]; then
             ENVIRONMENT="uat"
           elif [[ "$BRANCH" == main || "$BRANCH" == hotfix/* ]]; then
             ENVIRONMENT="prod"
@@ -60,42 +78,32 @@ jobs:
           echo "- **Branch**: $BRANCH" >> $GITHUB_STEP_SUMMARY
           echo "- **Environment**: $ENVIRONMENT" >> $GITHUB_STEP_SUMMARY
 
-      - name: List all modified files in the branch
-        id: changed_files
+      - name: Determine base branch based on current branch
         run: |
           git fetch --all
           
-          # Determine base branch based on the event type
-          # if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-          #   echo "**GitHub Event :** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
-          #   BASE_BRANCH="${{ github.event.pull_request.base.ref }}"
-          # else
-          #   echo "**GitHub Event :** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
-          #   BASE_BRANCH="main"
-          # 
-          
-          # GitHub event type logging
           echo "**GitHub Event :** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
           
-          # Get the current branch for push event
-          CURRENT_BRANCH="${{ github.ref_name }}"
-          echo "Current branch is: $CURRENT_BRANCH" >> $GITHUB_STEP_SUMMARY
-
-          # Determine the base branch dynamically based on the branch pattern
-          if [[ "$CURRENT_BRANCH" == feature/* ]]; then
+              # Determine base branch based on the event type
+          if [[ "${{ github.event_name }}" == "pull_request" && "$BRANCH" == develop ]]; then
+            echo "**GitHub Event :** pull_request" >> $GITHUB_STEP_SUMMARY
             BASE_BRANCH="develop"
-          elif [[ "$CURRENT_BRANCH" == release/* ]]; then
+          elif [[ "${{ github.event_name }}" == "pull_request" && "$BRANCH" == main ]]; then
+            echo "**GitHub Event :** pull_request" >> $GITHUB_STEP_SUMMARY
             BASE_BRANCH="main"
-          elif [[ "$CURRENT_BRANCH" == hotfix/* ]]; then
+          elif [[ "$BRANCH" == feature/* ]]; then
+            echo "Feature branch detected" >> $GITHUB_STEP_SUMMARY
+            BASE_BRANCH="develop"
+          elif [[ "$BRANCH" == develop ]]; then
+            echo "develop branch detected" >> $GITHUB_STEP_SUMMARY
             BASE_BRANCH="main"
           else
-            # Fallback to default base branch
             BASE_BRANCH="main"
           fi
 
           echo "Base branch is determined as: $BASE_BRANCH" >> $GITHUB_STEP_SUMMARY
           echo "BASE_BRANCH=$BASE_BRANCH" >> $GITHUB_ENV
-
+          
           # Verify the BASE_BRANCH exists after fetching
           if git show-ref --verify --quiet refs/remotes/origin/$BASE_BRANCH; then
             echo "Base branch exists remotely."
@@ -103,56 +111,42 @@ jobs:
             echo "Base branch does not exist remotely. Exiting."
             exit 1
           fi
-
-          # Get the current branch dynamically based on the event
+          
+               # Get the current branch dynamically based on the event
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
             CURRENT_BRANCH="${{ github.event.pull_request.head.ref }}"
           else
             CURRENT_BRANCH="${{ github.ref_name }}"
           fi
 
-          # Fetch the current branch if not already available
+          echo "Current branch is: $CURRENT_BRANCH" >> $GITHUB_STEP_SUMMARY
           git fetch origin $CURRENT_BRANCH
-
-          # Display git rev-parse for base branch and current commit
+          
           BASE_BRANCH_SHA=$(git rev-parse origin/$BASE_BRANCH)
           CURRENT_SHA="${{ github.sha }}"
-
+          
           echo "Base branch ($BASE_BRANCH) commit hash: $BASE_BRANCH_SHA"
           echo "Current commit hash (github.sha): $CURRENT_SHA"
-
-            # Check branch and commits step summary
-          echo "### Branch & Commit Hashes" >> $GITHUB_STEP_SUMMARY
-          echo "- **Base branch**: $BASE_BRANCH" >> $GITHUB_STEP_SUMMARY
-          echo "- **Current branch**: $CURRENT_BRANCH" >> $GITHUB_STEP_SUMMARY
-          echo "- **Base branch commit ($BASE_BRANCH)**: $BASE_BRANCH_SHA" >> $GITHUB_STEP_SUMMARY
-          echo "- **Current branch commit (github.sha)**: $CURRENT_SHA" >> $GITHUB_STEP_SUMMARY
-    
-
-          # Check if PR is merged by checking if the base and current branch are the same
+          
           if [[ "$BASE_BRANCH_SHA" == "$CURRENT_SHA" ]]; then
-            # PR has been merged, use the previous commit to get the changes before the merge
-            echo "$BASE_BRANCH_SHA and  $CURRENT_SHA are same " >> $GITHUB_STEP_SUMMARY
+            echo "$BASE_BRANCH_SHA and $CURRENT_SHA are the same" >> $GITHUB_STEP_SUMMARY
             PARENT_COMMIT=$(git rev-parse $CURRENT_SHA^1)
-            echo "Pull request merged to $BASE_BRANCH branch. Using the parent commit SHA $PARENT_COMMIT to find changes for the current SHA $CURRENT_SHA." >> $GITHUB_STEP_SUMMARY
+            echo "PR merged to $BASE_BRANCH branch. Using parent commit $PARENT_COMMIT to find changes." >> $GITHUB_STEP_SUMMARY
             MODIFIED_FILES=$(git diff --name-only $PARENT_COMMIT $CURRENT_SHA)
           else
-            # Regular diff
             MODIFIED_FILES=$(git diff --name-only origin/$BASE_BRANCH..$CURRENT_SHA)
           fi
-
+          
           echo "Modified files: $MODIFIED_FILES"
           echo "$MODIFIED_FILES" | tr '\n' ',' > files_list.txt
           echo "MODIFIED_FILES=$(cat files_list.txt)" >> $GITHUB_ENV
-
-          # Add modified files to the step summary
+          
           echo "### Modified Files" >> $GITHUB_STEP_SUMMARY
           if [ -z "$MODIFIED_FILES" ]; then
             echo "No modified files" >> $GITHUB_STEP_SUMMARY
           else
             echo "$MODIFIED_FILES" >> $GITHUB_STEP_SUMMARY
           fi
-
 
       - name: Set program files and zip them
         id: set_programs
@@ -214,7 +208,6 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true)
     steps:
       - name: Download Alpha files
         if: needs.build.outputs.alpha_exists == 'true'
