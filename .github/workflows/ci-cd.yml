@@ -21,28 +21,29 @@ on:
 jobs:
   rebase:
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
     steps:
-      - name: Checkout the target branch (base branch)
+      - name: Checkout the target branch (base)
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.base.ref }}
+          ref: ${{ github.event.pull_request.base.ref }}  # Target branch like develop
           fetch-depth: 0
           clean: true
 
-      - name: Checkout the current branch (head branch)
+      - name: Checkout the current branch (head)
         run: |
-          git fetch origin ${{ github.event.pull_request.head.ref }}
-          git checkout ${{ github.event.pull_request.head.ref }}
+          git fetch origin ${{ github.event.pull_request.head.ref }}  # Fetch the feature branch
+          git checkout ${{ github.event.pull_request.head.ref }}      # Checkout the feature branch
 
       - name: Rebase the current branch onto the target branch
         run: |
-          git rebase origin/${{ github.event.pull_request.base.ref }}
+          git rebase origin/${{ github.event.pull_request.base.ref }}  # Rebase the feature branch onto develop
 
-      - name: Push the rebased branch (force-push after rebase)
+      - name: Push the rebased branch
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Use GitHub token to push
         run: |
-          git push origin ${{ github.event.pull_request.head.ref }} --force
+          git push origin ${{ github.event.pull_request.head.ref }} --force  # Force push after rebase to update the PR
 
   build:
     needs: rebase
@@ -53,7 +54,7 @@ jobs:
       gamma_exists: ${{ steps.set_programs.outputs.gamma_exists }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -81,6 +82,7 @@ jobs:
           echo "ENVIRONMENT=$ENVIRONMENT" >> $GITHUB_ENV
           echo "BRANCH=$BRANCH" >> $GITHUB_ENV
 
+          # GitHub summary for this step
           echo "### Environment and Branch Info" >> $GITHUB_STEP_SUMMARY
           echo "- **Branch**: $BRANCH" >> $GITHUB_STEP_SUMMARY
           echo "- **Environment**: $ENVIRONMENT" >> $GITHUB_STEP_SUMMARY
@@ -89,12 +91,9 @@ jobs:
         run: |
           git fetch --all
           
-          echo "**GitHub Event :** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
-          
+          # Determine base branch based on the event type
           if [[ "${{ github.event_name }}" == "pull_request" && "$BRANCH" == develop ]]; then
             BASE_BRANCH="develop"
-          elif [[ "${{ github.event_name }}" == "pull_request" && "$BRANCH" == main ]]; then
-            BASE_BRANCH="main"
           elif [[ "$BRANCH" == feature/* ]]; then
             BASE_BRANCH="develop"
           elif [[ "$BRANCH" == develop ]]; then
@@ -102,8 +101,121 @@ jobs:
           else
             BASE_BRANCH="main"
           fi
-      
+
           echo "Base branch is determined as: $BASE_BRANCH" >> $GITHUB_STEP_SUMMARY
           echo "BASE_BRANCH=$BASE_BRANCH" >> $GITHUB_ENV
+
+          # Fetch the current branch if not already available
+          git fetch origin $BRANCH
           
-          if git show-ref --verif
+          # Display git rev-parse for base branch and current commit
+          BASE_BRANCH_SHA=$(git rev-parse origin/$BASE_BRANCH)
+          CURRENT_SHA="${{ github.sha }}"
+          
+          echo "Base branch ($BASE_BRANCH) commit hash: $BASE_BRANCH_SHA"
+          echo "Current commit hash (github.sha): $CURRENT_SHA"
+          
+          if [[ "$BASE_BRANCH_SHA" == "$CURRENT_SHA" ]]; then
+            PARENT_COMMIT=$(git rev-parse $CURRENT_SHA^1)
+            MODIFIED_FILES=$(git diff --name-only $PARENT_COMMIT $CURRENT_SHA)
+          else
+            MODIFIED_FILES=$(git diff --name-only origin/$BASE_BRANCH..$CURRENT_SHA)
+          fi
+          
+          echo "Modified files: $MODIFIED_FILES"
+          echo "$MODIFIED_FILES" | tr '\n' ',' > files_list.txt
+          echo "MODIFIED_FILES=$(cat files_list.txt)" >> $GITHUB_ENV
+
+      - name: Set program files and zip them
+        id: set_programs
+        run: |
+          MODIFIED_FILES="${{ env.MODIFIED_FILES }}"
+          ALPHA_FILES=()
+          BETA_FILES=()
+          GAMMA_FILES=()
+
+          IFS=',' read -ra FILE_ARRAY <<< "$MODIFIED_FILES"
+          for file in "${FILE_ARRAY[@]}"; do
+            if [[ "$file" == alpha/* ]]; then
+              ALPHA_FILES+=("$file")
+            elif [[ "$file" == beta/* ]]; then
+              BETA_FILES+=("$file")
+            elif [[ "$file" == gamma/* ]]; then
+              GAMMA_FILES+=("$file")
+            fi
+          done
+
+          function zip_and_upload {
+            PROGRAM_NAME=$1
+            FILES=("${!2}")
+            ZIP_NAME="${PROGRAM_NAME}_modified_files.zip"
+            if [ ${#FILES[@]} -gt 0 ]; then
+              zip -r "$ZIP_NAME" "${FILES[@]}"
+              echo "Zipped $PROGRAM_NAME files into $ZIP_NAME"
+              mv "$ZIP_NAME" "$PROGRAM_NAME.zip"
+              echo "::set-output name=${PROGRAM_NAME}_exists::true"
+            else
+              echo "No modified files for $PROGRAM_NAME."
+              echo "::set-output name=${PROGRAM_NAME}_exists::false"
+            fi
+          }
+
+          zip_and_upload "alpha" ALPHA_FILES[@]
+          zip_and_upload "beta" BETA_FILES[@]
+          zip_and_upload "gamma" GAMMA_FILES[@]
+
+      - name: Upload Alpha files
+        if: steps.set_programs.outputs.alpha_exists == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: alpha_modified_files
+          path: alpha.zip
+      - name: Upload Beta files
+        if: steps.set_programs.outputs.beta_exists == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: beta_modified_files
+          path: beta.zip
+      - name: Upload Gamma files
+        if: steps.set_programs.outputs.gamma_exists == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: gamma_modified_files
+          path: gamma.zip
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true)
+    steps:
+      - name: Download Alpha files
+        if: needs.build.outputs.alpha_exists == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: alpha_modified_files
+          path: downloaded_files/alpha
+      - name: Download Beta files
+        if: needs.build.outputs.beta_exists == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: beta_modified_files
+          path: downloaded_files/beta
+      - name: Download Gamma files
+        if: needs.build.outputs.gamma_exists == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: gamma_modified_files
+          path: downloaded_files/gamma
+      - name: Extract and list downloaded files
+        run: |
+          for program in alpha beta gamma; do
+            if [ -d "downloaded_files/$program" ]; then
+              ls "downloaded_files/$program"
+            else
+              echo "Artifact for $program does not exist."
+            fi
+          done
+
+      - name: Deployment into ${{ env.ENVIRONMENT }} environment
+        run: |
+          echo "Deploying to the ${{ env.ENVIRONMENT }} environment..."
