@@ -44,10 +44,10 @@ jobs:
       beta_exists: ${{ steps.set_programs.outputs.beta_exists }}
       gamma_exists: ${{ steps.set_programs.outputs.gamma_exists }}
     steps:
-    #   - name: Checkout code
-    #     uses: actions/checkout@v3
-    #     with:
-    #       fetch-depth: 0
+      - name: Checkout code - shallo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
 
       - name: Set environment based on the branch
         id: set_env
@@ -80,7 +80,7 @@ jobs:
 
       - name: Determine base branch based on current branch
         run: |
-          #git fetch --all
+          git fetch --all
           
           echo "**GitHub Event :** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
           
