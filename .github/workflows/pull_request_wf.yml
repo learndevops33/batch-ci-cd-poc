@@ -109,7 +109,13 @@ jobs:
             exit 1
           fi
           
-          CURRENT_BRANCH="${{ github.ref_name }}"
+               # Get the current branch dynamically based on the event
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            CURRENT_BRANCH="${{ github.event.pull_request.head.ref }}"
+          else
+            CURRENT_BRANCH="${{ github.ref_name }}"
+          fi
+
           echo "Current branch is: $CURRENT_BRANCH" >> $GITHUB_STEP_SUMMARY
           git fetch origin $CURRENT_BRANCH
           
