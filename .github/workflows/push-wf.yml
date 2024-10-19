@@ -60,7 +60,7 @@ jobs:
           if [[ "$BRANCH" == feature/* ]]; then
             BASE_BRANCH="develop"
           elif [[ "$BRANCH" == develop ]]; then
-            BASE_BRANCH="main"
+            BASE_BRANCH="develop"
           fi
 
           echo "Base branch is determined as: $BASE_BRANCH" >> $GITHUB_STEP_SUMMARY
