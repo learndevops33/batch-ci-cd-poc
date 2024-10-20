@@ -18,7 +18,11 @@ on:
       - alpha/**
       - beta/**
       - gamma/**
-
+  pull_request:
+    branches:
+      - 'release/*'
+      - develop
+      - main
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -35,7 +39,14 @@ jobs:
       - name: Set environment based on the branch
         id: set_env
         run: |
-          BRANCH="${{ github.ref_name }}"
+          # Determine the branch depending on the event type (pull_request or push)
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            BRANCH="${{ github.event.pull_request.base.ref }}"
+          else
+            BRANCH="${{ github.ref_name }}"
+          fi
+      
+          # Set the environment based on the branch name
           if [[ "$BRANCH" == feature/* || "$BRANCH" == bugfix/* ]]; then
             ENVIRONMENT="dev"
           elif [[ "$BRANCH" == release/* || "$BRANCH" == develop ]]; then
@@ -46,26 +57,44 @@ jobs:
             echo "Unknown branch, exiting"
             exit 1
           fi
-
+      
           echo "environment is set to $ENVIRONMENT"
           echo "ENVIRONMENT=$ENVIRONMENT" >> $GITHUB_ENV
           echo "BRANCH=$BRANCH" >> $GITHUB_ENV
-
+      
           # GitHub summary for this step
           echo "### Environment and Branch Info" >> $GITHUB_STEP_SUMMARY
           echo "- **Branch**: $BRANCH" >> $GITHUB_STEP_SUMMARY
           echo "- **Environment**: $ENVIRONMENT" >> $GITHUB_STEP_SUMMARY
+        
 
       - name: Determine base branch based on current branch
         run: |
           git fetch --all
           
-          # BASE_BRANCH="main"  # Default base branch
-          if [[ "$BRANCH" == feature/* ||  "$BRANCH" == develop ]]; then
-            BASE_BRANCH="develop"
-          elif [[ "$BRANCH" == main  ||  "$BRANCH" == release/* ]]; then
-            BASE_BRANCH="main"
+           # Fetch branch based on event type (pull_request or push)
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "**GitHub Event :** pull_request" >> $GITHUB_STEP_SUMMARY
+            if [[ "$BRANCH" == develop ]]; then
+              BASE_BRANCH="develop"
+            elif [[ "$BRANCH" == main ]]; then
+              BASE_BRANCH="main"
+            else
+              BASE_BRANCH="develop"  # Default to develop for feature branches in PRs
+            fi
+          else
+            # Handle push events
+            if [[ "$BRANCH" == feature/* || "$BRANCH" == develop ]]; then
+              BASE_BRANCH="develop"
+            elif [[ "$BRANCH" == main || "$BRANCH" == release/* ]]; then
+              BASE_BRANCH="main"
+            else
+              BASE_BRANCH="main"  # Default to main for other branches
+            fi
           fi
+
+          echo "Base branch is set to: $BASE_BRANCH" >> $GITHUB_STEP_SUMMARY
+          echo "BASE_BRANCH=$BASE_BRANCH" >> $GITHUB_ENV
 
           echo "Base branch is determined as: $BASE_BRANCH" >> $GITHUB_STEP_SUMMARY
           echo "BASE_BRANCH=$BASE_BRANCH" >> $GITHUB_ENV
