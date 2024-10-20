@@ -140,40 +140,7 @@ jobs:
       - name: Read GitHub Environment Variables
         id: read_env_vars
         run: |
-          echo "Reading environment variables for environment: $ENVIRONMENT"
-
-          if [ "$ENVIRONMENT" == "dev" ]; then
-            echo "DEV_VARIABLE_1=${{ vars.DEV_VARIABLE_1 }}" >> $GITHUB_ENV
-            echo "DEV_VARIABLE_2=${{ vars.DEV_VARIABLE_2 }}" >> $GITHUB_ENV
-            echo "Development environment variables loaded."
-
-          elif [ "$ENVIRONMENT" == "uat" ]; then
-            echo "UAT_VARIABLE_1=${{ vars.UAT_VARIABLE_1 }}" >> $GITHUB_ENV
-            echo "UAT_VARIABLE_2=${{ vars.UAT_VARIABLE_2 }}" >> $GITHUB_ENV
-            echo "UAT environment variables loaded."
-
-          elif [ "$ENVIRONMENT" == "prod" ]; then
-            echo "PROD_VARIABLE_1=${{ vars.PROD_VARIABLE_1 }}" >> $GITHUB_ENV
-            echo "PROD_VARIABLE_2=${{ vars.PROD_VARIABLE_2 }}" >> $GITHUB_ENV
-            echo "Production environment variables loaded."
-
-          else
-            echo "No valid environment detected. Exiting."
-            exit 1
-          fi
-
-          # Display loaded environment variables in the summary
-          echo "### Loaded Environment Variables" >> $GITHUB_STEP_SUMMARY
-          if [ "$ENVIRONMENT" == "dev" ]; then
-            echo "- **DEV_VARIABLE_1**: ${DEV_VARIABLE_1}" >> $GITHUB_STEP_SUMMARY
-            echo "- **DEV_VARIABLE_2**: ${DEV_VARIABLE_2}" >> $GITHUB_STEP_SUMMARY
-          elif [ "$ENVIRONMENT" == "uat" ]; then
-            echo "- **UAT_VARIABLE_1**: ${UAT_VARIABLE_1}" >> $GITHUB_STEP_SUMMARY
-            echo "- **UAT_VARIABLE_2**: ${UAT_VARIABLE_2}" >> $GITHUB_STEP_SUMMARY
-          elif [ "$ENVIRONMENT" == "prod" ]; then
-            echo "- **PROD_VARIABLE_1**: ${PROD_VARIABLE_1}" >> $GITHUB_STEP_SUMMARY
-            echo "- **PROD_VARIABLE_2**: ${PROD_VARIABLE_2}" >> $GITHUB_STEP_SUMMARY
-          fi
+            echo "DEV_VARIABLE_1=${{ vars.DEV_VARIABLE_1 }}"
 
       - name: Set program files and zip them
         id: set_programs
