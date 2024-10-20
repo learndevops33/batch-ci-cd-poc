@@ -87,8 +87,8 @@ jobs:
           BASE_BRANCH_SHA=$(git rev-parse origin/$BASE_BRANCH)
           CURRENT_SHA="${{ github.sha }}"
           
-          echo "Base branch ($BASE_BRANCH) commit hash: $BASE_BRANCH_SHA"
-          echo "Current commit hash (github.sha): $CURRENT_SHA"
+          echo "Base branch ($BASE_BRANCH) commit hash: $BASE_BRANCH_SHA" >> $GITHUB_STEP_SUMMARY
+          echo "Current commit hash (github.sha): $CURRENT_SHA" >> $GITHUB_STEP_SUMMARY
           
           if [[ "$BASE_BRANCH_SHA" == "$CURRENT_SHA" ]]; then
             echo "$BASE_BRANCH_SHA and $CURRENT_SHA are the same" >> $GITHUB_STEP_SUMMARY
