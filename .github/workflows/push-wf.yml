@@ -103,10 +103,9 @@ jobs:
           # Fetch the details for the table
           # Create the table format
           echo "### Deployment Summary" >> $GITHUB_STEP_SUMMARY
-          echo "GITHUB_EVENT="${{ github.event_name }}"" >> $GITHUB_ENV
           echo "| GitHub Event | Current Branch | Base Branch | Current Branch SHA | Base Branch SHA | Modified Files | Target Environment |" >> $GITHUB_STEP_SUMMARY
           echo "|----------------|----------------|-------------|--------------------|-----------------|----------------|--------------------|" >> $GITHUB_STEP_SUMMARY
-          echo "| $GITHUB_EVENT | $BRANCH | $BASE_BRANCH | $CURRENT_SHA | $BASE_BRANCH_SHA | $MODIFIED_FILES | $ENVIRONMENT |" >> $GITHUB_STEP_SUMMARY
+          echo "| ${{ github.event_name }} | $BRANCH | $BASE_BRANCH | $CURRENT_SHA | $BASE_BRANCH_SHA | $MODIFIED_FILES | $ENVIRONMENT |" >> $GITHUB_STEP_SUMMARY
 
       - name: Set program files and zip them
         id: set_programs
