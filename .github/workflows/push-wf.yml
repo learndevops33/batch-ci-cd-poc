@@ -26,7 +26,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+    environment: dev
     outputs:
       alpha_exists: ${{ steps.set_programs.outputs.alpha_exists }}
       beta_exists: ${{ steps.set_programs.outputs.beta_exists }}
