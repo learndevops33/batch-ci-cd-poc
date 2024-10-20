@@ -134,7 +134,9 @@ jobs:
           echo "| GitHub Event | Current Branch | Base Branch | Current Branch SHA | Base Branch SHA | Modified Files | Target Environment |" >> $GITHUB_STEP_SUMMARY
           echo "|----------------|----------------|-------------|--------------------|-----------------|----------------|--------------------|" >> $GITHUB_STEP_SUMMARY
           echo "| ${{ github.event_name }} | $BRANCH | $BASE_BRANCH | $CURRENT_SHA | $BASE_BRANCH_SHA | $MODIFIED_FILES | $ENVIRONMENT |" >> $GITHUB_STEP_SUMMARY
-      
+      - name: Print All Environment Variables
+        run: env
+        
       - name: Read GitHub Environment Variables
         id: read_env_vars
         run: |
