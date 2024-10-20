@@ -18,7 +18,11 @@ on:
       - alpha/**
       - beta/**
       - gamma/**
-
+  pull_request:
+    branches:
+      - 'release/*'
+      - develop
+      - main
 jobs:
   build:
     runs-on: ubuntu-latest
