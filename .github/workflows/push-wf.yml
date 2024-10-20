@@ -100,17 +100,14 @@ jobs:
             echo "$MODIFIED_FILES" >> $GITHUB_STEP_SUMMARY
           fi
           
-          
-
       - name: Create and display summary table
         run: |
           # Fetch the details for the table
           # Create the table format
-          MODIFIED_FILES_FORMATTED=$(echo "$MODIFIED_FILES" | tr ',' '\n' | sed 's/^/  /')
           echo "### Deployment Summary" >> $GITHUB_STEP_SUMMARY
           echo "| Current Branch | Base Branch | Current Branch SHA | Base Branch SHA | Modified Files | Target Environment |" >> $GITHUB_STEP_SUMMARY
           echo "|----------------|-------------|--------------------|-----------------|----------------|--------------------|" >> $GITHUB_STEP_SUMMARY
-          echo "| $BRANCH | $BASE_BRANCH | $CURRENT_SHA | $BASE_BRANCH_SHA | $MODIFIED_FILES_FORMATTED | $ENVIRONMENT |" >> $GITHUB_STEP_SUMMARY
+          echo "| $BRANCH | $BASE_BRANCH | $CURRENT_SHA | $BASE_BRANCH_SHA | $MODIFIED_FILES | $ENVIRONMENT |" >> $GITHUB_STEP_SUMMARY
 
       - name: Set program files and zip them
         id: set_programs
