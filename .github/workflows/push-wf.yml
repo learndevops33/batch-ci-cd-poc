@@ -106,7 +106,7 @@ jobs:
         run: |
           # Fetch the details for the table
           # Create the table format
-          MODIFIED_FILES_FORMATTED=$(echo "$MODIFIED_FILES" | tr ',' '<br>')
+          MODIFIED_FILES_FORMATTED=$(echo "$MODIFIED_FILES" | tr ',' '\n' | sed 's/^/    /')
           echo "### Deployment Summary" >> $GITHUB_STEP_SUMMARY
           echo "| Current Branch | Base Branch | Current Branch SHA | Base Branch SHA | Modified Files | Target Environment |" >> $GITHUB_STEP_SUMMARY
           echo "|----------------|-------------|--------------------|-----------------|----------------|--------------------|" >> $GITHUB_STEP_SUMMARY
