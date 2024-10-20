@@ -72,18 +72,6 @@ jobs:
           echo "Base branch is determined as: $BASE_BRANCH" >> $GITHUB_STEP_SUMMARY
           echo "BASE_BRANCH=$BASE_BRANCH" >> $GITHUB_ENV
           
-          # Verify the BASE_BRANCH exists after fetching
-          # if git show-ref --verify --quiet refs/remotes/origin/$BASE_BRANCH; then
-          #   echo "Base branch exists remotely."
-          # else
-          #   echo "Base branch does not exist remotely. Exiting."
-          #   exit 1
-          # fi
-          
-          # CURRENT_BRANCH="${{ github.ref_name }}"
-          # echo "Current branch is: $CURRENT_BRANCH" >> $GITHUB_STEP_SUMMARY
-          # git fetch origin $CURRENT_BRANCH
-          
           BASE_BRANCH_SHA=$(git rev-parse origin/$BASE_BRANCH)
           CURRENT_SHA="${{ github.sha }}"
           
@@ -109,6 +97,14 @@ jobs:
           else
             echo "$MODIFIED_FILES" >> $GITHUB_STEP_SUMMARY
           fi
+      - name: Create and display summary table
+        run: |
+          # Fetch the details for the table
+          # Create the table format
+          echo "### Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Current Branch | Base Branch | Current Branch SHA | Base Branch SHA | Modified Files | Target Environment |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------------|-------------|--------------------|-----------------|----------------|--------------------|" >> $GITHUB_STEP_SUMMARY
+          echo "| $BRANCH | $BASE_BRANCH | $CURRENT_SHA | $BASE_BRANCH_SHA | $MODIFIED_FILES | $ENVIRONMENT |" >> $GITHUB_STEP_SUMMARY
 
       - name: Set program files and zip them
         id: set_programs
