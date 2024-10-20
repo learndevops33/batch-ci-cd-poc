@@ -137,23 +137,23 @@ jobs:
       
         
       - name: Read GitHub Environment Variables
-        id: read_env_vars
+        id: read_env_secrets
         run: |
           echo "Reading environment variables for environment: $ENVIRONMENT"
 
           if [ "$ENVIRONMENT" == "dev" ]; then
-            echo "DEV_VARIABLE_1=${{ vars.DEV_VARIABLE_1 }}" >> $GITHUB_ENV
-            echo "DEV_VARIABLE_2=${{ vars.DEV_VARIABLE_2 }}" >> $GITHUB_ENV
+            echo "DEV_VARIABLE_1=${{ secrets.DEV_VARIABLE_1 }}" >> $GITHUB_ENV
+            echo "DEV_VARIABLE_2=${{ secrets.DEV_VARIABLE_2 }}" >> $GITHUB_ENV
             echo "Development environment variables loaded."
 
           elif [ "$ENVIRONMENT" == "uat" ]; then
-            echo "UAT_VARIABLE_1=${{ vars.UAT_VARIABLE_1 }}" >> $GITHUB_ENV
-            echo "UAT_VARIABLE_2=${{ vars.UAT_VARIABLE_2 }}" >> $GITHUB_ENV
+            echo "UAT_VARIABLE_1=${{ secrets.UAT_VARIABLE_1 }}" >> $GITHUB_ENV
+            echo "UAT_VARIABLE_2=${{ secrets.UAT_VARIABLE_2 }}" >> $GITHUB_ENV
             echo "UAT environment variables loaded."
 
           elif [ "$ENVIRONMENT" == "prod" ]; then
-            echo "PROD_VARIABLE_1=${{ vars.PROD_VARIABLE_1 }}" >> $GITHUB_ENV
-            echo "PROD_VARIABLE_2=${{ vars.PROD_VARIABLE_2 }}" >> $GITHUB_ENV
+            echo "PROD_VARIABLE_1=${{ secrets.PROD_VARIABLE_1 }}" >> $GITHUB_ENV
+            echo "PROD_VARIABLE_2=${{ secrets.PROD_VARIABLE_2 }}" >> $GITHUB_ENV
             echo "Production environment variables loaded."
 
           else
@@ -164,14 +164,14 @@ jobs:
           # Display loaded environment variables in the summary
           echo "### Loaded Environment Variables" >> $GITHUB_STEP_SUMMARY
           if [ "$ENVIRONMENT" == "dev" ]; then
-            echo "- **DEV_VARIABLE_1**: ${{ vars.DEV_VARIABLE_1 }}" >> $GITHUB_STEP_SUMMARY
-            echo "- **DEV_VARIABLE_2**: ${{ vars.DEV_VARIABLE_2 }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **DEV_VARIABLE_1**: ${{ secrets.DEV_VARIABLE_1 }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **DEV_VARIABLE_2**: ${{ secrets.DEV_VARIABLE_2 }}" >> $GITHUB_STEP_SUMMARY
           elif [ "$ENVIRONMENT" == "uat" ]; then
-            echo "- **UAT_VARIABLE_1**: ${{ vars.UAT_VARIABLE_1 }}" >> $GITHUB_STEP_SUMMARY
-            echo "- **UAT_VARIABLE_2**: ${{ vars.UAT_VARIABLE_2 }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **UAT_VARIABLE_1**: ${{ secrets.UAT_VARIABLE_1 }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **UAT_VARIABLE_2**: ${{ secrets.UAT_VARIABLE_2 }}" >> $GITHUB_STEP_SUMMARY
           elif [ "$ENVIRONMENT" == "prod" ]; then
-            echo "- **PROD_VARIABLE_1**: ${{ vars.PROD_VARIABLE_1 }}" >> $GITHUB_STEP_SUMMARY
-            echo "- **PROD_VARIABLE_2**: ${{ vars.PROD_VARIABLE_2 }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **PROD_VARIABLE_1**: ${{ secrets.PROD_VARIABLE_1 }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **PROD_VARIABLE_2**: ${{ secrets.PROD_VARIABLE_2 }}" >> $GITHUB_STEP_SUMMARY
           fi
       - name: Print All Environment Variables
         run: env
