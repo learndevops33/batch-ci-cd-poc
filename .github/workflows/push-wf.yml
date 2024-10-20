@@ -1,5 +1,12 @@
 name: mock CI/CD
 
+
+#This approach effectively reduces unnecessary resource consumption by canceling old workflows that are still running when new commits are pushed.
+#It ensures that only the latest commits trigger the workflow while keeping the context of the branch, making it easier to manage builds and deployments.
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   workflow_dispatch: 
   push:
