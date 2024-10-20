@@ -165,14 +165,14 @@ jobs:
           # Display loaded environment variables in the summary
           echo "### Loaded Environment Variables" >> $GITHUB_STEP_SUMMARY
           if [ "$ENVIRONMENT" == "dev" ]; then
-            echo "- **DEV_VARIABLE_1**: ${{ secrets.DEV_VARIABLE_1 }}" >> $GITHUB_STEP_SUMMARY
-            echo "- **DEV_VARIABLE_2**: ${{ secrets.DEV_VARIABLE_2 }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **DEV_VARIABLE_1**: ${DEV_VARIABLE_1}" >> $GITHUB_STEP_SUMMARY
+            echo "- **DEV_VARIABLE_2**: ${DEV_VARIABLE_2}" >> $GITHUB_STEP_SUMMARY
           elif [ "$ENVIRONMENT" == "uat" ]; then
-            echo "- **UAT_VARIABLE_1**: ${{ secrets.UAT_VARIABLE_1 }}" >> $GITHUB_STEP_SUMMARY
-            echo "- **UAT_VARIABLE_2**: ${{ secrets.UAT_VARIABLE_2 }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **UAT_VARIABLE_1**: ${UAT_VARIABLE_1}" >> $GITHUB_STEP_SUMMARY
+            echo "- **UAT_VARIABLE_2**: ${UAT_VARIABLE_2}" >> $GITHUB_STEP_SUMMARY
           elif [ "$ENVIRONMENT" == "prod" ]; then
-            echo "- **PROD_VARIABLE_1**: ${{ secrets.PROD_VARIABLE_1 }}" >> $GITHUB_STEP_SUMMARY
-            echo "- **PROD_VARIABLE_2**: ${{ secrets.PROD_VARIABLE_2 }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **PROD_VARIABLE_1**: ${PROD_VARIABLE_1}" >> $GITHUB_STEP_SUMMARY
+            echo "- **PROD_VARIABLE_2**: ${PROD_VARIABLE_2}" >> $GITHUB_STEP_SUMMARY
           fi
 
       - name: Set program files and zip them
