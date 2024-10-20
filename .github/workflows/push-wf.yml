@@ -171,7 +171,7 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     steps:
       - name: Download Alpha files
         if: needs.build.outputs.alpha_exists == 'true'
