@@ -1,8 +1,7 @@
 name: mock CI/CD
 
 
-#This approach effectively reduces unnecessary resource consumption by canceling old workflows that are still running when new commits are pushed.
-#It ensures that only the latest commits trigger the workflow while keeping the context of the branch, making it easier to manage builds and deployments.
+# Cancel in-progress workflows when new commits are pushed to the same branch
 concurrency:
   group: ${{ github.ref }}
   cancel-in-progress: true
@@ -63,27 +62,27 @@ jobs:
           
           echo "**GitHub Event :** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
           
-          BASE_BRANCH="main"  # Default base branch
-          if [[ "$BRANCH" == feature/* ]]; then
+          # BASE_BRANCH="main"  # Default base branch
+          if [[ "$BRANCH" == feature/* ||  "$BRANCH" == develop ]]; then
             BASE_BRANCH="develop"
-          elif [[ "$BRANCH" == develop ]]; then
-            BASE_BRANCH="develop"
+          elif [[ "$BRANCH" == main  ||  "$BRANCH" == release/* ]]; then
+            BASE_BRANCH="main"
           fi
 
           echo "Base branch is determined as: $BASE_BRANCH" >> $GITHUB_STEP_SUMMARY
           echo "BASE_BRANCH=$BASE_BRANCH" >> $GITHUB_ENV
           
           # Verify the BASE_BRANCH exists after fetching
-          if git show-ref --verify --quiet refs/remotes/origin/$BASE_BRANCH; then
-            echo "Base branch exists remotely."
-          else
-            echo "Base branch does not exist remotely. Exiting."
-            exit 1
-          fi
+          # if git show-ref --verify --quiet refs/remotes/origin/$BASE_BRANCH; then
+          #   echo "Base branch exists remotely."
+          # else
+          #   echo "Base branch does not exist remotely. Exiting."
+          #   exit 1
+          # fi
           
-          CURRENT_BRANCH="${{ github.ref_name }}"
-          echo "Current branch is: $CURRENT_BRANCH" >> $GITHUB_STEP_SUMMARY
-          git fetch origin $CURRENT_BRANCH
+          # CURRENT_BRANCH="${{ github.ref_name }}"
+          # echo "Current branch is: $CURRENT_BRANCH" >> $GITHUB_STEP_SUMMARY
+          # git fetch origin $CURRENT_BRANCH
           
           BASE_BRANCH_SHA=$(git rev-parse origin/$BASE_BRANCH)
           CURRENT_SHA="${{ github.sha }}"
