@@ -67,7 +67,6 @@ jobs:
           echo "- **Branch**: $BRANCH" >> $GITHUB_STEP_SUMMARY
           echo "- **Environment**: $ENVIRONMENT" >> $GITHUB_STEP_SUMMARY
         
-
       - name: Determine base branch based on current branch
         run: |
           git fetch --all
@@ -135,7 +134,45 @@ jobs:
           echo "| GitHub Event | Current Branch | Base Branch | Current Branch SHA | Base Branch SHA | Modified Files | Target Environment |" >> $GITHUB_STEP_SUMMARY
           echo "|----------------|----------------|-------------|--------------------|-----------------|----------------|--------------------|" >> $GITHUB_STEP_SUMMARY
           echo "| ${{ github.event_name }} | $BRANCH | $BASE_BRANCH | $CURRENT_SHA | $BASE_BRANCH_SHA | $MODIFIED_FILES | $ENVIRONMENT |" >> $GITHUB_STEP_SUMMARY
+      
+      - name: Read GitHub Environment Variables
+        id: read_env_vars
+        run: |
+          echo "Reading environment variables for environment: $ENVIRONMENT"
 
+          if [ "$ENVIRONMENT" == "dev" ]; then
+            echo "DEV_VARIABLE_1=${{ github.environment_variables.DEV_VARIABLE_1 }}" >> $GITHUB_ENV
+            echo "DEV_VARIABLE_2=${{ github.environment_variables.DEV_VARIABLE_2 }}" >> $GITHUB_ENV
+            echo "Development environment variables loaded."
+
+          elif [ "$ENVIRONMENT" == "uat" ]; then
+            echo "UAT_VARIABLE_1=${{ github.environment_variables.UAT_VARIABLE_1 }}" >> $GITHUB_ENV
+            echo "UAT_VARIABLE_2=${{ github.environment_variables.UAT_VARIABLE_2 }}" >> $GITHUB_ENV
+            echo "UAT environment variables loaded."
+
+          elif [ "$ENVIRONMENT" == "prod" ]; then
+            echo "PROD_VARIABLE_1=${{ github.environment_variables.PROD_VARIABLE_1 }}" >> $GITHUB_ENV
+            echo "PROD_VARIABLE_2=${{ github.environment_variables.PROD_VARIABLE_2 }}" >> $GITHUB_ENV
+            echo "Production environment variables loaded."
+
+          else
+            echo "No valid environment detected. Exiting."
+            exit 1
+          fi
+
+          # Display loaded environment variables in the summary
+          echo "### Loaded Environment Variables" >> $GITHUB_STEP_SUMMARY
+          if [ "$ENVIRONMENT" == "dev" ]; then
+            echo "- **DEV_VARIABLE_1**: ${{ github.environment_variables.DEV_VARIABLE_1 }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **DEV_VARIABLE_2**: ${{ github.environment_variables.DEV_VARIABLE_2 }}" >> $GITHUB_STEP_SUMMARY
+          elif [ "$ENVIRONMENT" == "uat" ]; then
+            echo "- **UAT_VARIABLE_1**: ${{ github.environment_variables.UAT_VARIABLE_1 }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **UAT_VARIABLE_2**: ${{ github.environment_variables.UAT_VARIABLE_2 }}" >> $GITHUB_STEP_SUMMARY
+          elif [ "$ENVIRONMENT" == "prod" ]; then
+            echo "- **PROD_VARIABLE_1**: ${{ github.environment_variables.PROD_VARIABLE_1 }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **PROD_VARIABLE_2**: ${{ github.environment_variables.PROD_VARIABLE_2 }}" >> $GITHUB_STEP_SUMMARY
+          fi
+    
       - name: Set program files and zip them
         id: set_programs
         run: |
@@ -180,12 +217,14 @@ jobs:
         with:
           name: alpha_modified_files
           path: alpha.zip
+
       - name: Upload Beta files
         if: steps.set_programs.outputs.beta_exists == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: beta_modified_files
           path: beta.zip
+
       - name: Upload Gamma files
         if: steps.set_programs.outputs.gamma_exists == 'true'
         uses: actions/upload-artifact@v4
