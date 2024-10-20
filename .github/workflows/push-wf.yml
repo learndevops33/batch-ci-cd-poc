@@ -134,8 +134,7 @@ jobs:
           echo "| GitHub Event | Current Branch | Base Branch | Current Branch SHA | Base Branch SHA | Modified Files | Target Environment |" >> $GITHUB_STEP_SUMMARY
           echo "|----------------|----------------|-------------|--------------------|-----------------|----------------|--------------------|" >> $GITHUB_STEP_SUMMARY
           echo "| ${{ github.event_name }} | $BRANCH | $BASE_BRANCH | $CURRENT_SHA | $BASE_BRANCH_SHA | $MODIFIED_FILES | $ENVIRONMENT |" >> $GITHUB_STEP_SUMMARY
-      - name: Print All Environment Variables
-        run: env
+      
         
       - name: Read GitHub Environment Variables
         id: read_env_vars
@@ -174,7 +173,8 @@ jobs:
             echo "- **PROD_VARIABLE_1**: ${{ vars.PROD_VARIABLE_1 }}" >> $GITHUB_STEP_SUMMARY
             echo "- **PROD_VARIABLE_2**: ${{ vars.PROD_VARIABLE_2 }}" >> $GITHUB_STEP_SUMMARY
           fi
-    
+      - name: Print All Environment Variables
+        run: env
       - name: Set program files and zip them
         id: set_programs
         run: |
