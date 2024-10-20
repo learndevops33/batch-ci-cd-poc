@@ -26,6 +26,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    
     outputs:
       alpha_exists: ${{ steps.set_programs.outputs.alpha_exists }}
       beta_exists: ${{ steps.set_programs.outputs.beta_exists }}
@@ -173,8 +174,7 @@ jobs:
             echo "- **PROD_VARIABLE_1**: ${{ secrets.PROD_VARIABLE_1 }}" >> $GITHUB_STEP_SUMMARY
             echo "- **PROD_VARIABLE_2**: ${{ secrets.PROD_VARIABLE_2 }}" >> $GITHUB_STEP_SUMMARY
           fi
-      - name: Print All Environment Variables
-        run: env
+
       - name: Set program files and zip them
         id: set_programs
         run: |
