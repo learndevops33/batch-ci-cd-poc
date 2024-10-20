@@ -60,8 +60,6 @@ jobs:
         run: |
           git fetch --all
           
-          echo "**GitHub Event :** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
-          
           # BASE_BRANCH="main"  # Default base branch
           if [[ "$BRANCH" == feature/* ||  "$BRANCH" == develop ]]; then
             BASE_BRANCH="develop"
@@ -99,15 +97,16 @@ jobs:
           else
             echo "$MODIFIED_FILES" >> $GITHUB_STEP_SUMMARY
           fi
-          
+
       - name: Create and display summary table
         run: |
           # Fetch the details for the table
           # Create the table format
           echo "### Deployment Summary" >> $GITHUB_STEP_SUMMARY
-          echo "| Current Branch | Base Branch | Current Branch SHA | Base Branch SHA | Modified Files | Target Environment |" >> $GITHUB_STEP_SUMMARY
+          echo "GitHub_Event=${{ github.event_name }}" >> $GITHUB_ENV
+          echo "| GitHub Event | Current Branch | Base Branch | Current Branch SHA | Base Branch SHA | Modified Files | Target Environment |" >> $GITHUB_STEP_SUMMARY
           echo "|----------------|-------------|--------------------|-----------------|----------------|--------------------|" >> $GITHUB_STEP_SUMMARY
-          echo "| $BRANCH | $BASE_BRANCH | $CURRENT_SHA | $BASE_BRANCH_SHA | $MODIFIED_FILES | $ENVIRONMENT |" >> $GITHUB_STEP_SUMMARY
+          echo "| #GitHub_Event | $BRANCH | $BASE_BRANCH | $CURRENT_SHA | $BASE_BRANCH_SHA | $MODIFIED_FILES | $ENVIRONMENT |" >> $GITHUB_STEP_SUMMARY
 
       - name: Set program files and zip them
         id: set_programs
