@@ -77,6 +77,7 @@ jobs:
     needs: set-environment
     env:
       BRANCH: ${{ needs.set-environment.outputs.branch }}  # Set the branch at the job level
+      ENVIRONMENT : ${{ needs.set-environment.outputs.environment }}
     environment: ${{ needs.set-environment.outputs.environment }} 
     outputs:
       alpha_exists: ${{ steps.set_programs.outputs.alpha_exists }}
