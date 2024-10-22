@@ -24,13 +24,12 @@ on:
       - develop
       - main
 jobs:
-  build:
+  # Job to set environment and branch information
+  set-environment:
     runs-on: ubuntu-latest
-    environment: dev
     outputs:
-      alpha_exists: ${{ steps.set_programs.outputs.alpha_exists }}
-      beta_exists: ${{ steps.set_programs.outputs.beta_exists }}
-      gamma_exists: ${{ steps.set_programs.outputs.gamma_exists }}
+      environment: ${{ steps.set_env.outputs.environment }}
+      branch: ${{ steps.set_env.outputs.branch }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -59,14 +58,64 @@ jobs:
             exit 1
           fi
       
-          echo "environment is set to $ENVIRONMENT"
-          echo "ENVIRONMENT=$ENVIRONMENT" >> $GITHUB_ENV
+          echo "ENVIRONMENT=$ENVIRONMENT" >> $GITHUB_ENV  # Write to environment file
           echo "BRANCH=$BRANCH" >> $GITHUB_ENV
+          
+          # Set job outputs
+          echo "environment=$ENVIRONMENT" >> $GITHUB_OUTPUT
+          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
       
-          # GitHub summary for this step
+      - name: GitHub summary for environment and branch info
+        run: |
           echo "### Environment and Branch Info" >> $GITHUB_STEP_SUMMARY
-          echo "- **Branch**: $BRANCH" >> $GITHUB_STEP_SUMMARY
-          echo "- **Environment**: $ENVIRONMENT" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch**: ${{ env.BRANCH }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment**: ${{ env.ENVIRONMENT }}" >> $GITHUB_STEP_SUMMARY
+
+
+  build:
+    runs-on: ubuntu-latest
+    needs: set-environment
+    environment: ${{ needs.set-environment.outputs.environment }} 
+    outputs:
+      alpha_exists: ${{ steps.set_programs.outputs.alpha_exists }}
+      beta_exists: ${{ steps.set_programs.outputs.beta_exists }}
+      gamma_exists: ${{ steps.set_programs.outputs.gamma_exists }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      # - name: Set environment based on the branch
+      #   id: set_env
+      #   run: |
+      #     # Determine the branch depending on the event type (pull_request or push)
+      #     if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+      #       BRANCH="${{ github.event.pull_request.base.ref }}"
+      #     else
+      #       BRANCH="${{ github.ref_name }}"
+      #     fi
+      
+      #     # Set the environment based on the branch name
+      #     if [[ "$BRANCH" == feature/* || "$BRANCH" == bugfix/* ]]; then
+      #       ENVIRONMENT="dev"
+      #     elif [[ "$BRANCH" == release/* || "$BRANCH" == develop ]]; then
+      #       ENVIRONMENT="uat"
+      #     elif [[ "$BRANCH" == main || "$BRANCH" == hotfix/* ]]; then
+      #       ENVIRONMENT="prod"
+      #     else
+      #       echo "Unknown branch, exiting"
+      #       exit 1
+      #     fi
+      
+      #     echo "environment is set to $ENVIRONMENT"
+      #     echo "ENVIRONMENT=$ENVIRONMENT" >> $GITHUB_ENV
+      #     echo "BRANCH=$BRANCH" >> $GITHUB_ENV
+      
+      #     # GitHub summary for this step
+      #     echo "### Environment and Branch Info" >> $GITHUB_STEP_SUMMARY
+      #     echo "- **Branch**: $BRANCH" >> $GITHUB_STEP_SUMMARY
+      #     echo "- **Environment**: $ENVIRONMENT" >> $GITHUB_STEP_SUMMARY
         
       - name: Determine base branch based on current branch
         run: |
@@ -140,7 +189,7 @@ jobs:
       - name: Read GitHub Environment Variables
         id: read_env_vars
         run: |
-            echo "DEV_VARIABLE_1=${{ vars.DEV_VARIABLE_1 }}"
+            echo "DBNAME=${{ vars.DB_NAME }}"
 
       - name: Set program files and zip them
         id: set_programs
