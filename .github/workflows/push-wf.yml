@@ -57,12 +57,16 @@ jobs:
           fi
       
           echo "environment is set to $ENVIRONMENT"
-          echo "::set-output name=environment::$ENVIRONMENT"  # Set as output
+          echo "ENVIRONMENT=$ENVIRONMENT" >> $GITHUB_ENV  # Write to environment file
+      
+      - name: Set output for environment
+        run: echo "env=${{ env.ENVIRONMENT }}" >> $GITHUB_OUTPUT
+
 
   build:
     runs-on: ubuntu-latest
     needs: set-environment
-    environment: ${{ needs.set-environment.outputs.env }}  # Use the environment from the previous job
+    environment: ${{ needs.set-environment.outputs.env }} 
     outputs:
       alpha_exists: ${{ steps.set_programs.outputs.alpha_exists }}
       beta_exists: ${{ steps.set_programs.outputs.beta_exists }}
