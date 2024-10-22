@@ -85,37 +85,6 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-
-      # - name: Set environment based on the branch
-      #   id: set_env
-      #   run: |
-      #     # Determine the branch depending on the event type (pull_request or push)
-      #     if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-      #       BRANCH="${{ github.event.pull_request.base.ref }}"
-      #     else
-      #       BRANCH="${{ github.ref_name }}"
-      #     fi
-      
-      #     # Set the environment based on the branch name
-      #     if [[ "$BRANCH" == feature/* || "$BRANCH" == bugfix/* ]]; then
-      #       ENVIRONMENT="dev"
-      #     elif [[ "$BRANCH" == release/* || "$BRANCH" == develop ]]; then
-      #       ENVIRONMENT="uat"
-      #     elif [[ "$BRANCH" == main || "$BRANCH" == hotfix/* ]]; then
-      #       ENVIRONMENT="prod"
-      #     else
-      #       echo "Unknown branch, exiting"
-      #       exit 1
-      #     fi
-      
-      #     echo "environment is set to $ENVIRONMENT"
-      #     echo "ENVIRONMENT=$ENVIRONMENT" >> $GITHUB_ENV
-      #     echo "BRANCH=$BRANCH" >> $GITHUB_ENV
-      
-      #     # GitHub summary for this step
-      #     echo "### Environment and Branch Info" >> $GITHUB_STEP_SUMMARY
-      #     echo "- **Branch**: $BRANCH" >> $GITHUB_STEP_SUMMARY
-      #     echo "- **Environment**: $ENVIRONMENT" >> $GITHUB_STEP_SUMMARY
         
       - name: Determine base branch based on current branch
         run: |
