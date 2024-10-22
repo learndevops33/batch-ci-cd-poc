@@ -176,7 +176,7 @@ jobs:
       - name: Read GitHub Environment Variables
         id: read_env_vars
         run: |
-            echo "DEV_VARIABLE_1=${{ vars.DB_NAME }}"
+            echo "DBNAME=${{ vars.DB_NAME }}"
 
       - name: Set program files and zip them
         id: set_programs
