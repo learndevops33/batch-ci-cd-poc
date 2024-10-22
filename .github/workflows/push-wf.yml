@@ -75,7 +75,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     needs: set-environment
-    environment: ${{ needs.set-environment.outputs.env }} 
+    environment: ${{ needs.set-environment.outputs.environment }} 
     outputs:
       alpha_exists: ${{ steps.set_programs.outputs.alpha_exists }}
       beta_exists: ${{ steps.set_programs.outputs.beta_exists }}
