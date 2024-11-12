@@ -131,9 +131,9 @@ jobs:
             echo "$BASE_BRANCH_SHA and $CURRENT_SHA are the same" >> $GITHUB_STEP_SUMMARY
             PARENT_COMMIT=$(git rev-parse $CURRENT_SHA^1)
             echo "PR merged to $BASE_BRANCH branch. Using parent commit $PARENT_COMMIT to find changes." >> $GITHUB_STEP_SUMMARY
-            MODIFIED_FILES=$(git diff --diff-filter=ACM --name-only $PARENT_COMMIT $CURRENT_SHA)
+            MODIFIED_FILES=$(git diff --diff-filter=d --name-only $PARENT_COMMIT $CURRENT_SHA)
           else
-            MODIFIED_FILES=$(git diff --diff-filter=ACM --name-only origin/$BASE_BRANCH..$CURRENT_SHA)
+            MODIFIED_FILES=$(git diff --diff-filter=d --name-only origin/$BASE_BRANCH..$CURRENT_SHA)
           fi
           
           echo "Modified files: $MODIFIED_FILES"
